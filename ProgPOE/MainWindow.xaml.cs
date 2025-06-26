@@ -20,17 +20,18 @@ namespace ProgPOE
         private bool waitingForName = true;
         private string userName = null;
         private bool isDarkMode = false;
-        private readonly DispatcherTimer reminderTimer; // Added for task reminders
+        private readonly DispatcherTimer reminderTimer;
+        private readonly List<string> activityLog = new List<string>();
+        private const int MaxLogEntries = 5;
 
         public MainWindow()
         {
             InitializeComponent();
             InitializeBot();
 
-            // Set initial placeholder styles
             SetPlaceholderStyles();
             AppendToChat("Bot: Hello! Before we start, what is your name?");
-            reminderTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(10) }; // Initialize timer for reminders
+            reminderTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(10) };
             reminderTimer.Tick += ReminderTimer_Tick;
             reminderTimer.Start();
         }
@@ -68,6 +69,7 @@ namespace ProgPOE
                 userName = input;
                 waitingForName = false;
                 response = $"Nice to meet you, {userName}! You can ask me about phishing, passwords, privacy, scams, or say 'security tips'.";
+                AddToActivityLog($"Task added: Greeted user and set name to {userName}.");
             }
             else
             {
@@ -87,6 +89,12 @@ namespace ProgPOE
                 return "1. Keep your software and OS updated.\n2. Avoid using public Wi-Fi for sensitive info.\n3. Use 2FA on your accounts.";
             if (input == "what can i ask")
                 return "You can ask me about:\n- Phishing\n- Password Safety\n- Privacy\n- Scams\n- Security Tips\nOr tell me how you feel!";
+            if (input == "show activity log" || input == "what have you done for me?")
+            {
+                ActivityLogDisplay.Text = GetActivityLog();
+                MainTabControl.SelectedIndex = 3; // Switch to Activity Log tab (index 3)
+                return "Activity log displayed in the Activity Log tab.";
+            }
 
             foreach (var sentiment in sentimentResponses)
             {
@@ -118,7 +126,6 @@ namespace ProgPOE
             ChatOutput.ScrollToEnd();
         }
 
-        // Refactored placeholder logic into a single method
         private void SetPlaceholderStyles()
         {
             foreach (var tb in new[] { TaskTitleInput, TaskDescriptionInput, TaskReminderInput })
@@ -158,7 +165,7 @@ namespace ProgPOE
             if (reminder == (string)TaskReminderInput.Tag) reminder = "";
 
             var task = new CyberTask { Title = title, Description = description, Reminder = reminder };
-            if (tasks.Any(t => t.Title == title)) // Check for duplicate tasks
+            if (tasks.Any(t => t.Title == title))
             {
                 MessageBox.Show("A task with this title already exists.");
                 return;
@@ -166,7 +173,6 @@ namespace ProgPOE
             tasks.Add(task);
             TaskList.Items.Add(task.ToString());
 
-            // Reset inputs to placeholders
             TaskTitleInput.Text = (string)TaskTitleInput.Tag;
             TaskTitleInput.Foreground = (SolidColorBrush)FindResource("PlaceholderForeground");
             TaskDescriptionInput.Text = (string)TaskDescriptionInput.Tag;
@@ -175,7 +181,8 @@ namespace ProgPOE
             TaskReminderInput.Foreground = (SolidColorBrush)FindResource("PlaceholderForeground");
 
             MessageBox.Show("Task added successfully!");
-            ScheduleReminder(task); // Schedule reminder if set
+            ScheduleReminder(task);
+            AddToActivityLog($"Task added: '{title}' (Reminder set for {reminder}).");
         }
 
         private void CompleteTask_Click(object sender, RoutedEventArgs e)
@@ -191,12 +198,13 @@ namespace ProgPOE
                         task.Title += " [Done]";
                         TaskList.Items[index] = task.ToString();
                         MessageBox.Show("Task marked as completed.");
+                        AddToActivityLog($"Task completed: '{task.Title.Replace(" [Done]", "")}'.");
                     }
                 }
             }
             else
             {
-                MessageBox.Show("Please select a task to complete."); // Improved error handling
+                MessageBox.Show("Please select a task to complete.");
             }
         }
 
@@ -207,24 +215,25 @@ namespace ProgPOE
                 int index = TaskList.Items.IndexOf(TaskList.SelectedItem);
                 if (index >= 0 && index < tasks.Count)
                 {
+                    var task = tasks[index];
                     tasks.RemoveAt(index);
                     TaskList.Items.RemoveAt(index);
                     MessageBox.Show("Task deleted.");
+                    AddToActivityLog($"Task deleted: '{task.Title}'.");
                 }
             }
             else
             {
-                MessageBox.Show("Please select a task to delete."); // Improved error handling
+                MessageBox.Show("Please select a task to delete.");
             }
         }
 
-        // Added QuizQuestion with feedback
         private class QuizQuestion
         {
             public string Question { get; set; }
             public List<string> Options { get; set; }
             public int CorrectIndex { get; set; }
-            public string Feedback { get; set; } // Added feedback property
+            public string Feedback { get; set; }
         }
 
         private List<QuizQuestion> quizQuestions = new List<QuizQuestion>
@@ -250,7 +259,8 @@ namespace ProgPOE
                 ScoreText.Text = $"Final Score: {score}/{quizQuestions.Count}";
                 QuizProgressBar.Value = quizQuestions.Count;
                 ShowFeedback($"Quiz complete! Your score is {score}/{quizQuestions.Count}. Keep learning!", true);
-                NextButton.IsEnabled = false; // Disable Next button at end
+                NextButton.IsEnabled = false;
+                AddToActivityLog($"Quiz started - {quizQuestions.Count} questions answered.");
                 return;
             }
 
@@ -280,13 +290,13 @@ namespace ProgPOE
         private void QuizOption_Click(object sender, RoutedEventArgs e)
         {
             var button = sender as Button;
-            if (button == null) return; // Added null check
+            if (button == null) return;
             int selectedIndex = (int)button.Tag;
             var question = quizQuestions[currentQuestionIndex];
 
             if (selectedIndex == question.CorrectIndex)
             {
-                score++; // [CHANGE] Update score on correct answer
+                score++;
             }
 
             string feedback = selectedIndex == question.CorrectIndex
@@ -294,12 +304,12 @@ namespace ProgPOE
                 : $"Incorrect. The correct answer is: {question.Options[question.CorrectIndex]}. {question.Feedback}";
             ShowFeedback(feedback, false);
 
-            ScoreText.Text = $"Score: {score}"; // [CHANGE] Update score display immediately
+            ScoreText.Text = $"Score: {score}";
             foreach (Button btn in QuizOptionsPanel.Children)
             {
                 btn.IsEnabled = false;
             }
-            NextButton.IsEnabled = true; // [CHANGE] Enable Next button after answer
+            NextButton.IsEnabled = true;
         }
 
         private void ShowFeedback(string message, bool isFinal)
@@ -320,7 +330,7 @@ namespace ProgPOE
 
         private void NextQuestion_Click(object sender, RoutedEventArgs e)
         {
-            currentQuestionIndex++; // [CHANGE] Increment question index
+            currentQuestionIndex++;
             LoadQuizQuestion();
         }
 
@@ -337,6 +347,7 @@ namespace ProgPOE
             ScoreText.Text = $"Score: {score}";
             FeedbackOverlay.Visibility = Visibility.Collapsed;
             LoadQuizQuestion();
+            AddToActivityLog("Reminder set: Quiz restarted.");
         }
 
         private void MainTabControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -350,6 +361,10 @@ namespace ProgPOE
                     LoadQuizQuestion();
                     NextButton.IsEnabled = true;
                     HideFeedback();
+                }
+                else if (selectedTab.Header.ToString() == "Activity Log")
+                {
+                    ActivityLogDisplay.Text = GetActivityLog(); // Refresh log when tab is selected
                 }
             }
         }
@@ -394,21 +409,19 @@ namespace ProgPOE
                 Resources["PlaceholderForeground"] = Resources["LightPlaceholder"];
             }
 
-            storyboard.Begin(this); // Apply animation during theme switch
+            storyboard.Begin(this);
         }
 
-        // Added reminder scheduling
         private void ScheduleReminder(CyberTask task)
         {
             if (!string.IsNullOrWhiteSpace(task.Reminder))
             {
-                // Simple parsing (e.g., "in 3 days")
                 if (task.Reminder.ToLower().StartsWith("in ") && int.TryParse(task.Reminder.Split(' ')[1], out int days))
                 {
                     var reminderTime = DateTime.Now.AddDays(days);
-                    // For now, just set a flag or notify immediately for demo
                     ReminderNotification.Text = $"Reminder: {task.Title} is due in {days} days!";
                     ReminderNotification.Visibility = Visibility.Visible;
+                    AddToActivityLog($"Reminder set: '{task.Title}' for {days} days from now.");
                 }
             }
         }
@@ -421,9 +434,27 @@ namespace ProgPOE
                 {
                     ReminderNotification.Text = $"Reminder: {task.Title} is pending!";
                     ReminderNotification.Visibility = Visibility.Visible;
-                    break; // Show only the first pending reminder
+                    break;
                 }
             }
+        }
+
+        private void AddToActivityLog(string action)
+        {
+            activityLog.Insert(0, $"{DateTime.Now:yyyy-MM-dd HH:mm:ss} - {action}");
+            if (activityLog.Count > MaxLogEntries)
+            {
+                activityLog.RemoveRange(MaxLogEntries, activityLog.Count - MaxLogEntries);
+            }
+            if (MainTabControl.SelectedIndex == 3) // Update display if on Activity Log tab
+            {
+                ActivityLogDisplay.Text = GetActivityLog();
+            }
+        }
+
+        private string GetActivityLog()
+        {
+            return "Here's a summary of recent actions:\n" + string.Join("\n", activityLog);
         }
     }
 

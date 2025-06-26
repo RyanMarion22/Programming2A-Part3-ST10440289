@@ -134,7 +134,7 @@
 
             <!-- Chat Tab -->
             <TabItem Header="Chat">
-                <Border Background="{StaticResource CardBackground}" Margin="10" >
+                <Border Background="{StaticResource CardBackground}" Margin="10">
                     <Grid Margin="10">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="*"/>
@@ -166,7 +166,6 @@
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="*"/>
                             <RowDefinition Height="Auto"/>
-                            <!-- Added row for reminder notification -->
                         </Grid.RowDefinitions>
 
                         <StackPanel Orientation="Vertical" Grid.Row="0" Margin="0,0,0,10">
@@ -190,7 +189,6 @@
 
                         <TextBlock x:Name="ReminderNotification" Grid.Row="2" Foreground="{StaticResource AccentBackground}" 
                                    Margin="0,10,0,0" Visibility="Collapsed"/>
-                        <!-- Added reminder notification -->
                     </Grid>
                 </Border>
             </TabItem>
@@ -239,6 +237,26 @@
                                 </StackPanel>
                             </Border>
                         </Border>
+                    </Grid>
+                </Border>
+            </TabItem>
+
+            <!-- Activity Log Tab -->
+            <TabItem Header="Activity Log">
+                <Border Background="{StaticResource CardBackground}" Margin="10">
+                    <Grid Margin="10">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                        <TextBox x:Name="ActivityLogDisplay"
+                                 Grid.Row="0"
+                                 IsReadOnly="True"
+                                 Background="{StaticResource CardBackground}"
+                                 Foreground="{StaticResource TextForeground}"
+                                 VerticalScrollBarVisibility="Auto"
+                                 BorderThickness="1"
+                                 BorderBrush="{StaticResource BorderGrey}"
+                                 TextWrapping="Wrap"/>
                     </Grid>
                 </Border>
             </TabItem>

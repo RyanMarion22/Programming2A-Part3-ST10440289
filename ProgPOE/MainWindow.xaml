@@ -13,7 +13,6 @@
         <SolidColorBrush x:Key="LightText" Color="Black"/>
         <SolidColorBrush x:Key="LightBorderGrey" Color="#999"/>
         <SolidColorBrush x:Key="LightPlaceholder" Color="#757575"/>
-        <!-- Placeholder color for readability -->
 
         <!-- Dark Mode Brushes -->
         <SolidColorBrush x:Key="DarkPrimaryBackground" Color="#121212"/>
@@ -24,7 +23,6 @@
         <SolidColorBrush x:Key="DarkText" Color="White"/>
         <SolidColorBrush x:Key="DarkBorderGrey" Color="#666"/>
         <SolidColorBrush x:Key="DarkPlaceholder" Color="#B0BEC5"/>
-        <!-- Placeholder color for dark mode readability -->
 
         <!-- Default Brushes (initially Light Mode) -->
         <SolidColorBrush x:Key="PrimaryBackground" Color="#f2f2f2"/>
@@ -35,7 +33,6 @@
         <SolidColorBrush x:Key="TextForeground" Color="Black"/>
         <SolidColorBrush x:Key="BorderGrey" Color="#999"/>
         <SolidColorBrush x:Key="PlaceholderForeground" Color="#757575"/>
-        <!-- Default placeholder color -->
 
         <!-- Animation for Theme Transition -->
         <Storyboard x:Key="ThemeTransition">
@@ -46,9 +43,8 @@
             <ColorAnimation Storyboard.TargetProperty="(TextBlock.Foreground).(SolidColorBrush.Color)"
                             Duration="0:0:0.3" />
         </Storyboard>
-        <!-- Added animation for smoother theme transitions -->
 
-        <!-- TextBox Style (Removed invalid Trigger) -->
+        <!-- TextBox Style -->
         <Style TargetType="TextBox">
             <Setter Property="Margin" Value="5"/>
             <Setter Property="Padding" Value="6"/>
@@ -58,9 +54,7 @@
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="FontSize" Value="14"/>
             <Setter Property="Tag" Value="{Binding RelativeSource={RelativeSource Self}, Path=Text}"/>
-            <!-- Store initial text as Tag -->
         </Style>
-        <!-- [CHANGE] Removed invalid Trigger block -->
 
         <!-- Button Style -->
         <Style TargetType="Button">
@@ -78,7 +72,6 @@
             <Style.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
                     <Setter Property="Background" Value="#00695C"/>
-                    <!-- Added hover effect for better UX -->
                 </Trigger>
             </Style.Triggers>
         </Style>
@@ -158,7 +151,7 @@
                 </Border>
             </TabItem>
 
-            <!-- Tasks Tab -->
+            <!-- Tasks Tab (Optional, kept for manual task management) -->
             <TabItem Header="Tasks">
                 <Border Background="{StaticResource CardBackground}" Margin="10">
                     <Grid Margin="10">

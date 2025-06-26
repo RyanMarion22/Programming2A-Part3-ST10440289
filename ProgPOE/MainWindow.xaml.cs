@@ -23,6 +23,9 @@ namespace ProgPOE
         private readonly DispatcherTimer reminderTimer;
         private readonly List<string> activityLog = new List<string>();
         private const int MaxLogEntries = 5;
+        private string currentTaskTitle = null;
+        private string currentTaskDescription = null;
+        private int taskAddStep = 0; // 0: waiting for title, 1: waiting for description, 2: waiting for reminder
 
         public MainWindow()
         {
@@ -68,7 +71,7 @@ namespace ProgPOE
             {
                 userName = input;
                 waitingForName = false;
-                response = $"Nice to meet you, {userName}! You can ask me about phishing, passwords, privacy, scams, or say 'security tips'.";
+                response = $"Nice to meet you, {userName}! You can ask me about phishing, passwords, privacy, scams, or say 'security tips', or start adding a task with 'add task'.";
                 AddToActivityLog($"Task added: Greeted user and set name to {userName}.");
             }
             else
@@ -88,12 +91,19 @@ namespace ProgPOE
             if (input == "security tips")
                 return "1. Keep your software and OS updated.\n2. Avoid using public Wi-Fi for sensitive info.\n3. Use 2FA on your accounts.";
             if (input == "what can i ask")
-                return "You can ask me about:\n- Phishing\n- Password Safety\n- Privacy\n- Scams\n- Security Tips\nOr tell me how you feel!";
+                return "You can ask me about:\n- Phishing\n- Password Safety\n- Privacy\n- Scams\n- Security Tips\nOr start adding a task with 'add task'!";
             if (input == "show activity log" || input == "what have you done for me?")
             {
                 ActivityLogDisplay.Text = GetActivityLog();
-                MainTabControl.SelectedIndex = 3; // Switch to Activity Log tab (index 3)
+                MainTabControl.SelectedIndex = 3;
                 return "Activity log displayed in the Activity Log tab.";
+            }
+            if (input == "show tasks")
+            {
+                if (tasks.Count == 0)
+                    return "No tasks added yet.";
+                string taskList = "Your tasks:\n" + string.Join("\n", tasks.Select(t => t.ToString()));
+                return taskList;
             }
 
             foreach (var sentiment in sentimentResponses)
@@ -112,12 +122,88 @@ namespace ProgPOE
                 }
             }
 
-            if (input.Contains("add task") || input.Contains("remind me"))
-                return "Please switch to the Tasks tab to manage your reminders.";
+            if (input == "add task" && taskAddStep == 0)
+            {
+                taskAddStep = 1;
+                return "Please enter the task title.";
+            }
+            else if (taskAddStep == 1)
+            {
+                currentTaskTitle = input;
+                taskAddStep = 2;
+                return "Please enter the task description.";
+            }
+            else if (taskAddStep == 2)
+            {
+                currentTaskDescription = input;
+                taskAddStep = 3;
+                return "Please enter the reminder (e.g., 'in 3 days') or type 'none' if no reminder is needed.";
+            }
+            else if (taskAddStep == 3)
+            {
+                string reminder = input == "none" ? "" : input;
+                var task = new CyberTask { Title = currentTaskTitle, Description = currentTaskDescription, Reminder = reminder };
+                if (tasks.Any(t => t.Title == currentTaskTitle))
+                {
+                    taskAddStep = 0;
+                    return "A task with this title already exists.";
+                }
+                tasks.Add(task);
+                ScheduleReminder(task);
+                AddToActivityLog($"Task added: '{currentTaskTitle}' (Reminder set for {reminder}).");
+                taskAddStep = 0; // Reset step
+                return $"Task added: '{currentTaskTitle}' - {currentTaskDescription}" + (string.IsNullOrEmpty(reminder) ? "" : $" (Remind: {reminder}).");
+            }
+
+            if (input.Contains("remind me") && tasks.Any(t => t.Title == input.Split(new[] { "remind me" }, StringSplitOptions.None)[0].Trim()))
+            {
+                string title = input.Split(new[] { "remind me" }, StringSplitOptions.None)[0].Trim();
+                var task = tasks.First(t => t.Title == title);
+                if (!string.IsNullOrEmpty(task.Reminder))
+                {
+                    return $"Reminder already set for '{title}'. I'll remind you {task.Reminder}.";
+                }
+                string[] reminderParts = input.Split(new[] { "in " }, StringSplitOptions.None);
+                if (reminderParts.Length > 1 && int.TryParse(reminderParts[1].Split(' ')[0], out int days))
+                {
+                    task.Reminder = $"in {days} days";
+                    ScheduleReminder(task);
+                    AddToActivityLog($"Reminder updated: '{title}' for {days} days.");
+                    return $"Got it! I'll remind you about '{title}' in {days} days.";
+                }
+                return "Please specify a reminder timeframe (e.g., 'remind me in 3 days').";
+            }
+
+            if (input.Contains("complete task"))
+            {
+                string title = input.Replace("complete task", "").Trim();
+                var task = tasks.FirstOrDefault(t => t.Title == title && !t.Title.EndsWith(" [Done]"));
+                if (task != null)
+                {
+                    task.Title += " [Done]";
+                    AddToActivityLog($"Task completed: '{task.Title.Replace(" [Done]", "")}'.");
+                    return $"Task '{title}' marked as completed.";
+                }
+                return "No matching task found or task already completed.";
+            }
+
+            if (input.Contains("delete task"))
+            {
+                string title = input.Replace("delete task", "").Trim();
+                var task = tasks.FirstOrDefault(t => t.Title == title);
+                if (task != null)
+                {
+                    tasks.Remove(task);
+                    AddToActivityLog($"Task deleted: '{title}'.");
+                    return $"Task '{title}' deleted.";
+                }
+                return "No matching task found.";
+            }
+
             if (input.Contains("quiz") || input.Contains("test me"))
                 return "Go to the Quiz tab to test your cybersecurity skills!";
 
-            return "Sorry, I didn’t quite get that. Try asking about passwords, scams, or phishing.";
+            return "Sorry, I didn’t quite get that. Try asking about passwords, scams, or phishing, or start adding a task with 'add task'.";
         }
 
         private void AppendToChat(string message)
@@ -364,7 +450,7 @@ namespace ProgPOE
                 }
                 else if (selectedTab.Header.ToString() == "Activity Log")
                 {
-                    ActivityLogDisplay.Text = GetActivityLog(); // Refresh log when tab is selected
+                    ActivityLogDisplay.Text = GetActivityLog();
                 }
             }
         }
@@ -446,7 +532,7 @@ namespace ProgPOE
             {
                 activityLog.RemoveRange(MaxLogEntries, activityLog.Count - MaxLogEntries);
             }
-            if (MainTabControl.SelectedIndex == 3) // Update display if on Activity Log tab
+            if (MainTabControl.SelectedIndex == 3)
             {
                 ActivityLogDisplay.Text = GetActivityLog();
             }

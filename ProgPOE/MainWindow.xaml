@@ -132,6 +132,7 @@
                         <Grid.RowDefinitions>
                             <RowDefinition Height="*"/>
                             <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
 
                         <RichTextBox x:Name="ChatOutput"
@@ -147,38 +148,6 @@
                             <TextBox x:Name="UserInput" Width="650" FontSize="14" />
                             <Button x:Name="SendButton" Content="Send" Width="100" Click="SendButton_Click"/>
                         </StackPanel>
-                    </Grid>
-                </Border>
-            </TabItem>
-
-            <!-- Tasks Tab (Optional, kept for manual task management) -->
-            <TabItem Header="Tasks">
-                <Border Background="{StaticResource CardBackground}" Margin="10">
-                    <Grid Margin="10">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="*"/>
-                            <RowDefinition Height="Auto"/>
-                        </Grid.RowDefinitions>
-
-                        <StackPanel Orientation="Vertical" Grid.Row="0" Margin="0,0,0,10">
-                            <TextBox x:Name="TaskTitleInput" Text="Task Title" Tag="Task Title"/>
-                            <TextBox x:Name="TaskDescriptionInput" Text="Task Description" Tag="Task Description"/>
-                            <TextBox x:Name="TaskReminderInput" Text="Reminder (e.g. in 3 days)" Tag="Reminder (e.g. in 3 days)"/>
-                            <Button Content="Add Task" Click="AddTask_Click" Width="100"/>
-                        </StackPanel>
-
-                        <ListBox x:Name="TaskList" Grid.Row="1" SelectionMode="Single">
-                            <ListBox.ItemTemplate>
-                                <DataTemplate>
-                                    <StackPanel Orientation="Horizontal" Margin="5" VerticalAlignment="Center">
-                                        <TextBlock Text="{Binding}" Width="400" VerticalAlignment="Center" TextWrapping="Wrap"/>
-                                        <Button Content="Complete" Click="CompleteTask_Click" Margin="5,0"/>
-                                        <Button Content="Delete" Click="DeleteTask_Click" Margin="5,0"/>
-                                    </StackPanel>
-                                </DataTemplate>
-                            </ListBox.ItemTemplate>
-                        </ListBox>
 
                         <TextBlock x:Name="ReminderNotification" Grid.Row="2" Foreground="{StaticResource AccentBackground}" 
                                    Margin="0,10,0,0" Visibility="Collapsed"/>

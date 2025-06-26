@@ -32,7 +32,6 @@ namespace ProgPOE
             InitializeComponent();
             InitializeBot();
 
-            SetPlaceholderStyles();
             AppendToChat("Bot: Hello! Before we start, what is your name?");
             reminderTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(10) };
             reminderTimer.Tick += ReminderTimer_Tick;
@@ -95,7 +94,7 @@ namespace ProgPOE
             if (input == "show activity log" || input == "what have you done for me?")
             {
                 ActivityLogDisplay.Text = GetActivityLog();
-                MainTabControl.SelectedIndex = 3;
+                MainTabControl.SelectedIndex = 2; // Switch to Activity Log tab (index 2)
                 return "Activity log displayed in the Activity Log tab.";
             }
             if (input == "show tasks")
@@ -210,108 +209,6 @@ namespace ProgPOE
         {
             ChatOutput.Document.Blocks.Add(new Paragraph(new Run(message)));
             ChatOutput.ScrollToEnd();
-        }
-
-        private void SetPlaceholderStyles()
-        {
-            foreach (var tb in new[] { TaskTitleInput, TaskDescriptionInput, TaskReminderInput })
-            {
-                tb.GotFocus += (s, e) =>
-                {
-                    if (s is TextBox textBox && textBox.Text == (string)textBox.Tag)
-                    {
-                        textBox.Text = "";
-                        textBox.Foreground = (SolidColorBrush)FindResource("TextForeground");
-                    }
-                };
-                tb.LostFocus += (s, e) =>
-                {
-                    if (s is TextBox textBox && string.IsNullOrWhiteSpace(textBox.Text))
-                    {
-                        textBox.Text = (string)textBox.Tag;
-                        textBox.Foreground = (SolidColorBrush)FindResource("PlaceholderForeground");
-                    }
-                };
-            }
-        }
-
-        private void AddTask_Click(object sender, RoutedEventArgs e)
-        {
-            string title = TaskTitleInput.Text.Trim();
-            string description = TaskDescriptionInput.Text.Trim();
-            string reminder = TaskReminderInput.Text.Trim();
-
-            if (string.IsNullOrWhiteSpace(title) || title == (string)TaskTitleInput.Tag)
-            {
-                MessageBox.Show("Please enter a task title.");
-                return;
-            }
-
-            if (description == (string)TaskDescriptionInput.Tag) description = "";
-            if (reminder == (string)TaskReminderInput.Tag) reminder = "";
-
-            var task = new CyberTask { Title = title, Description = description, Reminder = reminder };
-            if (tasks.Any(t => t.Title == title))
-            {
-                MessageBox.Show("A task with this title already exists.");
-                return;
-            }
-            tasks.Add(task);
-            TaskList.Items.Add(task.ToString());
-
-            TaskTitleInput.Text = (string)TaskTitleInput.Tag;
-            TaskTitleInput.Foreground = (SolidColorBrush)FindResource("PlaceholderForeground");
-            TaskDescriptionInput.Text = (string)TaskDescriptionInput.Tag;
-            TaskDescriptionInput.Foreground = (SolidColorBrush)FindResource("PlaceholderForeground");
-            TaskReminderInput.Text = (string)TaskReminderInput.Tag;
-            TaskReminderInput.Foreground = (SolidColorBrush)FindResource("PlaceholderForeground");
-
-            MessageBox.Show("Task added successfully!");
-            ScheduleReminder(task);
-            AddToActivityLog($"Task added: '{title}' (Reminder set for {reminder}).");
-        }
-
-        private void CompleteTask_Click(object sender, RoutedEventArgs e)
-        {
-            if (sender is Button button && TaskList.SelectedItem != null)
-            {
-                int index = TaskList.Items.IndexOf(TaskList.SelectedItem);
-                if (index >= 0 && index < tasks.Count)
-                {
-                    var task = tasks[index];
-                    if (!task.Title.EndsWith(" [Done]"))
-                    {
-                        task.Title += " [Done]";
-                        TaskList.Items[index] = task.ToString();
-                        MessageBox.Show("Task marked as completed.");
-                        AddToActivityLog($"Task completed: '{task.Title.Replace(" [Done]", "")}'.");
-                    }
-                }
-            }
-            else
-            {
-                MessageBox.Show("Please select a task to complete.");
-            }
-        }
-
-        private void DeleteTask_Click(object sender, RoutedEventArgs e)
-        {
-            if (sender is Button button && TaskList.SelectedItem != null)
-            {
-                int index = TaskList.Items.IndexOf(TaskList.SelectedItem);
-                if (index >= 0 && index < tasks.Count)
-                {
-                    var task = tasks[index];
-                    tasks.RemoveAt(index);
-                    TaskList.Items.RemoveAt(index);
-                    MessageBox.Show("Task deleted.");
-                    AddToActivityLog($"Task deleted: '{task.Title}'.");
-                }
-            }
-            else
-            {
-                MessageBox.Show("Please select a task to delete.");
-            }
         }
 
         private class QuizQuestion
@@ -532,7 +429,7 @@ namespace ProgPOE
             {
                 activityLog.RemoveRange(MaxLogEntries, activityLog.Count - MaxLogEntries);
             }
-            if (MainTabControl.SelectedIndex == 3)
+            if (MainTabControl.SelectedIndex == 2)
             {
                 ActivityLogDisplay.Text = GetActivityLog();
             }

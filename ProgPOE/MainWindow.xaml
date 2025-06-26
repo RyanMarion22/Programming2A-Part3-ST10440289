@@ -1,0 +1,247 @@
+﻿<Window x:Class="ProgPOE.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Cybersecurity Awareness Bot" Height="600" Width="850">
+
+    <Window.Resources>
+        <!-- Light Mode Brushes -->
+        <SolidColorBrush x:Key="LightPrimaryBackground" Color="#f2f2f2"/>
+        <SolidColorBrush x:Key="LightHeaderBackground" Color="#004d40"/>
+        <SolidColorBrush x:Key="LightAccentBackground" Color="#00796b"/>
+        <SolidColorBrush x:Key="LightAccentForeground" Color="White"/>
+        <SolidColorBrush x:Key="LightCardBackground" Color="White"/>
+        <SolidColorBrush x:Key="LightText" Color="Black"/>
+        <SolidColorBrush x:Key="LightBorderGrey" Color="#999"/>
+        <SolidColorBrush x:Key="LightPlaceholder" Color="#757575"/>
+        <!-- Placeholder color for readability -->
+
+        <!-- Dark Mode Brushes -->
+        <SolidColorBrush x:Key="DarkPrimaryBackground" Color="#121212"/>
+        <SolidColorBrush x:Key="DarkHeaderBackground" Color="#1e1e1e"/>
+        <SolidColorBrush x:Key="DarkAccentBackground" Color="#009688"/>
+        <SolidColorBrush x:Key="DarkAccentForeground" Color="White"/>
+        <SolidColorBrush x:Key="DarkCardBackground" Color="#333333"/>
+        <SolidColorBrush x:Key="DarkText" Color="White"/>
+        <SolidColorBrush x:Key="DarkBorderGrey" Color="#666"/>
+        <SolidColorBrush x:Key="DarkPlaceholder" Color="#B0BEC5"/>
+        <!-- Placeholder color for dark mode readability -->
+
+        <!-- Default Brushes (initially Light Mode) -->
+        <SolidColorBrush x:Key="PrimaryBackground" Color="#f2f2f2"/>
+        <SolidColorBrush x:Key="HeaderBackground" Color="#004d40"/>
+        <SolidColorBrush x:Key="AccentBackground" Color="#00796b"/>
+        <SolidColorBrush x:Key="AccentForeground" Color="White"/>
+        <SolidColorBrush x:Key="CardBackground" Color="White"/>
+        <SolidColorBrush x:Key="TextForeground" Color="Black"/>
+        <SolidColorBrush x:Key="BorderGrey" Color="#999"/>
+        <SolidColorBrush x:Key="PlaceholderForeground" Color="#757575"/>
+        <!-- Default placeholder color -->
+
+        <!-- Animation for Theme Transition -->
+        <Storyboard x:Key="ThemeTransition">
+            <ColorAnimation Storyboard.TargetProperty="(Panel.Background).(SolidColorBrush.Color)"
+                            Duration="0:0:0.3" />
+            <ColorAnimation Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
+                            Duration="0:0:0.3" />
+            <ColorAnimation Storyboard.TargetProperty="(TextBlock.Foreground).(SolidColorBrush.Color)"
+                            Duration="0:0:0.3" />
+        </Storyboard>
+        <!-- Added animation for smoother theme transitions -->
+
+        <!-- TextBox Style (Removed invalid Trigger) -->
+        <Style TargetType="TextBox">
+            <Setter Property="Margin" Value="5"/>
+            <Setter Property="Padding" Value="6"/>
+            <Setter Property="Background" Value="{StaticResource CardBackground}"/>
+            <Setter Property="Foreground" Value="{StaticResource TextForeground}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderGrey}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Tag" Value="{Binding RelativeSource={RelativeSource Self}, Path=Text}"/>
+            <!-- Store initial text as Tag -->
+        </Style>
+        <!-- [CHANGE] Removed invalid Trigger block -->
+
+        <!-- Button Style -->
+        <Style TargetType="Button">
+            <Setter Property="Margin" Value="5"/>
+            <Setter Property="Padding" Value="6,3"/>
+            <Setter Property="Background" Value="{StaticResource AccentBackground}"/>
+            <Setter Property="Foreground" Value="{StaticResource AccentForeground}"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderGrey}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+            <Setter Property="MinWidth" Value="80"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#00695C"/>
+                    <!-- Added hover effect for better UX -->
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!-- TextBlock Style -->
+        <Style TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{StaticResource TextForeground}"/>
+            <Setter Property="FontSize" Value="14"/>
+        </Style>
+
+        <!-- TabControl Style -->
+        <Style TargetType="TabControl">
+            <Setter Property="Background" Value="{StaticResource PrimaryBackground}"/>
+        </Style>
+
+        <!-- TabItem Style -->
+        <Style TargetType="TabItem">
+            <Setter Property="Foreground" Value="{StaticResource TextForeground}"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Padding" Value="8,4"/>
+            <Setter Property="Margin" Value="2"/>
+        </Style>
+    </Window.Resources>
+
+    <Grid Background="{StaticResource PrimaryBackground}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Header with Title and Dark Mode Toggle -->
+        <DockPanel Grid.Row="0" Background="{StaticResource HeaderBackground}" Margin="10" VerticalAlignment="Center">
+            <TextBlock Text="Cybersecurity Awareness Bot"
+                       Foreground="{StaticResource AccentForeground}"
+                       FontSize="20" FontWeight="Bold"
+                       VerticalAlignment="Center"
+                       DockPanel.Dock="Left"/>
+            <CheckBox x:Name="DarkModeToggle" Content="Dark Mode"
+                      Foreground="{StaticResource AccentForeground}"
+                      VerticalAlignment="Center"
+                      Margin="10,0,0,0"
+                      DockPanel.Dock="Right"
+                      Checked="DarkModeToggle_Checked"
+                      Unchecked="DarkModeToggle_Unchecked"/>
+        </DockPanel>
+
+        <!-- Main Tab Control -->
+        <TabControl x:Name="MainTabControl"
+                    Grid.Row="1"
+                    Margin="10"
+                    Background="{StaticResource PrimaryBackground}"
+                    SelectionChanged="MainTabControl_SelectionChanged">
+
+            <!-- Chat Tab -->
+            <TabItem Header="Chat">
+                <Border Background="{StaticResource CardBackground}" Margin="10" >
+                    <Grid Margin="10">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <RichTextBox x:Name="ChatOutput"
+                                     Grid.Row="0"
+                                     IsReadOnly="True"
+                                     Background="{StaticResource CardBackground}"
+                                     Foreground="{StaticResource TextForeground}"
+                                     VerticalScrollBarVisibility="Auto"
+                                     BorderThickness="1"
+                                     BorderBrush="{StaticResource BorderGrey}"/>
+
+                        <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Stretch" Margin="0,10,0,0">
+                            <TextBox x:Name="UserInput" Width="650" FontSize="14" />
+                            <Button x:Name="SendButton" Content="Send" Width="100" Click="SendButton_Click"/>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+            </TabItem>
+
+            <!-- Tasks Tab -->
+            <TabItem Header="Tasks">
+                <Border Background="{StaticResource CardBackground}" Margin="10">
+                    <Grid Margin="10">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                            <!-- Added row for reminder notification -->
+                        </Grid.RowDefinitions>
+
+                        <StackPanel Orientation="Vertical" Grid.Row="0" Margin="0,0,0,10">
+                            <TextBox x:Name="TaskTitleInput" Text="Task Title" Tag="Task Title"/>
+                            <TextBox x:Name="TaskDescriptionInput" Text="Task Description" Tag="Task Description"/>
+                            <TextBox x:Name="TaskReminderInput" Text="Reminder (e.g. in 3 days)" Tag="Reminder (e.g. in 3 days)"/>
+                            <Button Content="Add Task" Click="AddTask_Click" Width="100"/>
+                        </StackPanel>
+
+                        <ListBox x:Name="TaskList" Grid.Row="1" SelectionMode="Single">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal" Margin="5" VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding}" Width="400" VerticalAlignment="Center" TextWrapping="Wrap"/>
+                                        <Button Content="Complete" Click="CompleteTask_Click" Margin="5,0"/>
+                                        <Button Content="Delete" Click="DeleteTask_Click" Margin="5,0"/>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+
+                        <TextBlock x:Name="ReminderNotification" Grid.Row="2" Foreground="{StaticResource AccentBackground}" 
+                                   Margin="0,10,0,0" Visibility="Collapsed"/>
+                        <!-- Added reminder notification -->
+                    </Grid>
+                </Border>
+            </TabItem>
+
+            <!-- Quiz Tab -->
+            <TabItem Header="Quiz">
+                <Border Background="{StaticResource CardBackground}" Margin="10">
+                    <Grid Margin="10">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <TextBlock x:Name="QuizQuestionText"
+                                   FontSize="18"
+                                   FontWeight="Bold"
+                                   TextWrapping="Wrap"
+                                   Foreground="{StaticResource TextForeground}"
+                                   Margin="0,0,0,10" />
+
+                        <StackPanel x:Name="QuizOptionsPanel" Grid.Row="1" HorizontalAlignment="Center" Margin="0,0,0,10" />
+
+                        <ProgressBar x:Name="QuizProgressBar"
+                                     Grid.Row="2"
+                                     Height="20"
+                                     Minimum="0"
+                                     Maximum="10"
+                                     Margin="0,10"
+                                     Foreground="{StaticResource AccentBackground}"
+                                     Background="{StaticResource BorderGrey}"/>
+
+                        <StackPanel Orientation="Horizontal" Grid.Row="3" HorizontalAlignment="Center" Margin="0,10,0,0">
+                            <Button x:Name="NextButton" Content="Next" Click="NextQuestion_Click" Width="100" Margin="0,0,10,0"/>
+                            <Button x:Name="RestartButton" Content="Restart" Click="RestartQuiz_Click" Width="100"/>
+                            <TextBlock x:Name="ScoreText" FontWeight="Bold" VerticalAlignment="Center" Margin="20,0,0,0" Foreground="{StaticResource TextForeground}"/>
+                        </StackPanel>
+
+                        <!-- Feedback overlay -->
+                        <Border x:Name="FeedbackOverlay" Background="#AA000000" Visibility="Collapsed" Grid.RowSpan="4" CornerRadius="8">
+                            <Border Background="{StaticResource CardBackground}" Padding="20" Width="350" MaxWidth="400" CornerRadius="8" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <StackPanel>
+                                    <TextBlock x:Name="FeedbackText" TextWrapping="Wrap" FontSize="16" Foreground="{StaticResource TextForeground}" TextAlignment="Center" Margin="0,0,0,10"/>
+                                    <Button Content="Close" Width="80" HorizontalAlignment="Center" Click="FeedbackClose_Click"/>
+                                </StackPanel>
+                            </Border>
+                        </Border>
+                    </Grid>
+                </Border>
+            </TabItem>
+        </TabControl>
+    </Grid>
+</Window>
